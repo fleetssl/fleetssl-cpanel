@@ -1,0 +1,17 @@
+<div id="addError" class="alert alert-danger">
+    <span class="glyphicon glyphicon-remove-sign"></span>
+    <div class="alert-message">
+        <p>{{TS `There was a problem processing your request`}}</p>
+        <ul>
+            {{ range . }}
+            <li>{{ . }}</li>
+            {{ end }}
+        </ul>
+    </div>
+</div>
+<div class="return-link">
+    <a id="lnkReturn" href="?">
+        <span class="glyphicon glyphicon-circle-arrow-left"></span>
+        {{TS `Go Back`}}
+    </a>
+</div>

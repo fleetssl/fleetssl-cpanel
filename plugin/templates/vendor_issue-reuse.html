@@ -1,0 +1,36 @@
+<p>{{ TS `You may re-use an existing certificate from a different virtual host, if needed. When the certificate is renewed, it will be installed to both virtual hosts.` }}</p>
+<style>
+label {
+  font-weight: normal;
+}
+.twell {
+  border: 1px solid #e3e3e3;
+  background-color: #f5f5f5;
+  padding: 9px;
+  border-radius: 3px;
+  margin-bottom: 20px;
+}
+</style>
+<form method="post" onsubmit="return LetsEncrypt_DisableButtons()">
+  <div class="twell">
+  {{ $root := .DomainRoot }}
+  <h4>{{ TF `Re-use an existing certificate for: %s` $root }}</h4>
+  <label>Select a certificate to re-use:</label>
+  <select name="cert_to_reuse" style="display: block;">
+  {{ range .Certs }}
+    {{ if eq .Domain $root }}
+    {{ else }}
+    <option value="{{ .Domain }}">{{ .Domain }}: {{ strJoin "," .AltNames }}</option>
+    {{ end }}
+  {{ end }}
+  </select>
+  </div>
+  <input type="submit" class="btn btn-primary" value="{{TS `Install`}}">
+</form>
+<hr>
+<div class="return-link">
+  <a id="lnkReturn" href="?">
+    <span class="glyphicon glyphicon-circle-arrow-left"></span>
+    {{TS `Go Back`}}
+  </a>
+</div>

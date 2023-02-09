@@ -1,0 +1,13 @@
+[  
+   {  
+      "icon":"letsencrypt-cpanel.png",
+      "featuremanager":true,
+      "name":"Lets Encrypt&trade; SSL",
+      "uri":"letsencrypt/letsencrypt.live.cgi",
+      "group_id":"security",
+      "order":"99",
+      "id":"letsencrypt-cpanel",
+      "type":"link",
+      "description" : "Lets Encrypt SSL (Jupiter)"
+   }
+]

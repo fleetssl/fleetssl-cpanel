@@ -1,0 +1,127 @@
+<p>{{TS `The Let's Encrypt&trade; service has rate limits for issuing large numbers of certificates and domains per certificate. <a href="https://letsencrypt.org/docs/rate-limits/" target="_blank">Click here</a> for more information.`}}</p>
+<p>{{TS `Please select any extra domains to include:`}}</p>
+<style>
+    .twell {
+        border: 1px solid #e3e3e3;
+        background-color: #f5f5f5;
+        padding: 9px;
+        border-radius: 3px;
+        margin-bottom: 20px;
+    }
+    label {
+        font-weight: normal;
+    }
+</style>
+<form method="post" onsubmit="return LetsEncrypt_DisableButtons()">
+    {{$existing := .Existing}}
+    {{$proxy := .ProxyDomains}}
+    {{$methods := .ChallengeMethods}}
+    {{$defaultKeyType := .DefaultKeyType}}
+    {{range $root, $list := .Domains}}
+    <div class="twell">
+        <h4>{{TF `Installing certificate to: %s` $root}}</h4>
+        <table class="table table-striped nonsortable">
+            <col width="30%">
+            <col width="20%">
+            <col width="10%">
+            <col width="10%">
+            <col width="30%">
+            <thead>
+                <tr>
+                    <th>{{TS `Domain`}}</th>
+                    <th>{{TS `Type`}}</th>
+                    <th>{{TS `Include?`}}</th>
+                    <th>{{TS `Include Wildcard*?`}}</th>
+                    <th>{{TS `Add cPanel subdomains**?`}}</th>
+                </tr>
+            </thead>
+            <tbody>
+            {{range $list}}
+                <tr>
+                    <td>{{.Domain}}</td>
+                    <td>{{.DomainType}}</td>
+                    <!-- Include Domain -->
+                    <td>
+                        {{ if eq $root .Domain }}
+                            <input type="hidden" name="aliasdomain" value="{{ .Domain }}">
+                             &#10004;
+                        {{ else }}
+                            <input type="checkbox" name="aliasdomain" value="{{.Domain}}"{{if (index $existing .Domain)}} checked{{end}}>
+                        {{ end }}
+                    </td>
+                    <!-- Include *.Domain (Wildcard) -->
+                    <td>
+                        {{ if eq (index .Domain 0) '*' }}
+                        <abbr title="Not applicable because this is already a wildcard virtual host">N/A</abbr>
+                        {{ else }}
+                        <input class="wildcard-checkbox" type="checkbox" name="aliasdomain" value="*.{{.Domain}}" 
+                            title="To include *.{{ .Domain }}, the dns-01 validation method must be used">
+                        {{ end }}
+                    </td>                 
+                    <!-- Include Proxy Subdomains -->       
+                    <td>
+                        {{ if eq (index .Domain 0) '*' }}
+                        <abbr title="Not applicable because this is a wildcard virtual host">N/A</abbr>
+                        {{ else }}                            
+                            {{ $dom := .Domain }}
+                            {{ with index $proxy $dom }}
+                                <input type="checkbox" name="proxydomain" value="{{ $dom }}">
+                                ({{ strJoin "," . }})
+                            {{ end }}
+                        {{ end }}
+                    </td>
+                </tr>
+            {{end}}
+            </tbody>
+        </table>
+        <p>
+            <small>* {{ TS `To include wildcard domains, the dns-01 validation method must be used.`}}</small>
+            <br>
+            <small>** {{ TS `cPanel subdomains are those such as <em>cpanel.*</em> and <em>webmail.*</em>, which when added, allow access to cPanel services via that subdomain. Be mindful of <a href="https://letsencrypt.org/docs/rate-limits/" target="_blank" rel="noopener">rate limits</a> when using cPanel subdomains for multiple domains.`}}</small>
+        </p>
+    </div>
+    {{ if eq (len $methods ) 1 }}
+        <input type="hidden" name="challenge_method" value="{{ index $methods 0 }}">
+    {{ else }}
+        <p>{{TS `Please choose an SSL validation method (all are automatic):`}}</p>
+        <div class="twell">
+            <small>
+                <p>{{ TS `You will usually want to use the HTTP validation method.
+                If your domain's nameservers point to cPanel, then you have the option of using the DNS validation method instead.` }}</p>
+                <p>{{ TS `If you wish to issue wildcards, you MUST use the DNS validation method.` }}</p>
+            </small>
+            {{ range $i, $method := $methods }}
+            <label><input type="radio" name="challenge_method" value="{{ $method }}" {{ if eq $i 0}}checked{{ end }}> {{ $method }}</label>
+            {{ end }}
+        </div>    
+    {{ end }}
+    <div class="twell">
+        <p>{{TS `Please choose a certificate key type (the default is recommended):`}}</p>
+        <select name="key_type" data-default="{{ $defaultKeyType }}">
+            <option value="" disabled></option>
+            <option value="rsa:2048" {{ if eq $defaultKeyType "rsa:2048" }}selected {{ end }}>RSA 2048-bit</option>
+            <option value="rsa:4096" {{ if eq $defaultKeyType "rsa:4096" }}selected {{ end }}>RSA 4096-bit</option>
+            <option value="ecdsa:p-256" {{ if eq $defaultKeyType "ecdsa:p-256" }}selected {{ end }}>ECDSA 256-bit</option>
+            <option value="ecdsa:p-384" {{ if eq $defaultKeyType "ecdsa:p-384" }}selected {{ end }}>ECDSA 384-bit</option>
+        </select>
+    </div>
+    {{end}}
+    <input type="hidden" id="dry_run" name="dry_run" value="0">
+    <input type="submit" class="btn btn-primary" value="{{TS `Issue`}}"
+        onclick="document.getElementById('dry_run').value = '0';">
+    <input type="submit" class="btn"
+        title="{{TS `A dry run tries to issue a test certificate without installing it. It can be useful to avoid being rate limited when testing.`}}"
+        onclick="document.getElementById('dry_run').value = '1';"
+        value="{{TS `Issue (Dry Run)`}}">
+</form>
+<p style="margin-top: 1.5em;">
+    {{ TS `If you would instead like to re-use an existing certificate from another virtual host,` }} 
+    <a href="?action=issue&domain={{.DomainRoot}}&mode=reuse">{{ TS `click here` }}</a>.
+</p>
+<hr>
+<div class="return-link">
+    <a id="lnkReturn" href="?">
+        <span class="glyphicon glyphicon-circle-arrow-left"></span>
+        {{TS `Go Back`}}
+    </a>
+</div>

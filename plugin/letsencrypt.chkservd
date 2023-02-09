@@ -1,0 +1,1 @@
+service[letsencrypt-cpanel]=5959,GET /alive HTTP/1.0,HTTP/1..,/sbin/service letsencrypt-cpanel restart

@@ -1,0 +1,33 @@
+/* Status.io Widget */
+
+.current-status-indicator {
+    width: 12px;
+    height: 12px;
+    margin: 0 0 0 5px;
+    display: inline-block;
+    border-radius: 6px
+}
+
+.current-status-indicator.small {
+    width: 8px;
+    height: 8px;
+    margin: 0 0 0 5px;
+    display: inline-block;
+    border-radius: 4px
+}
+
+.current-status-indicator.green {
+    background: #27ae60
+}
+
+.current-status-indicator.yellow {
+    background: #ffa837
+}
+
+.current-status-indicator.red {
+    background: #c44031
+}
+
+.current-status-indicator.blue {
+    background: #00aaf0
+}

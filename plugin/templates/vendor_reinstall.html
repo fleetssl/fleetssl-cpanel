@@ -1,0 +1,53 @@
+<style>
+    .twell {
+        border: 1px solid #e3e3e3;
+        background-color: #f5f5f5;
+        padding: 9px;
+        border-radius: 3px;
+        margin-bottom: 20px;
+    }
+    label {
+        font-weight: normal;
+    }    
+</style>
+<p>{{TF `Reinstall certificate for: <strong>%s</strong>` .Domain }} </p>
+{{with .AltNames}}
+<p>{{TS `This certificate also includes the following alternative names:`}}</p>
+<ul>
+    {{range .}}
+    <li>{{.}}</li>
+    {{end}}
+</ul>
+{{else}}
+<p>{{TS `This certificate has no alternative names.`}}</p>
+{{end}}
+<form method="post" onsubmit="return LetsEncrypt_DisableButtons()">
+
+    <div class="twell">
+        <p>
+            {{TS `Alternate Chain Selection`}}
+        </p>    
+        <p>{{TS `You may choose an alternate chain when re-installing the certificate. This can be useful to prioritize
+        compatibility with certain classes of devices. This choice will be remembered for renewal. See
+        <a href="https://cpanel.fleetssl.com/docs/for-users/alternate-chains/" target="_blank" rel="noopen noreferrer">here</a>
+        for more info.</a>`}}</p>
+        <select name="preferred_issuer" style="display:block;">
+            {{ range $issuer := .AlternateChains }}
+                <option value="{{ $issuer }}"
+                {{ if eq $issuer $.PreferredIssuer }} selected {{ end }}
+                >{{ $issuer }} {{ if eq $issuer $.PreferredIssuer }} (Currently preferred issuer) {{ end }}</option>
+            {{ end }}
+            <option value="" {{ if eq "" $.PreferredIssuer }} selected {{ end }}>(Use server default)</option>
+        </select>
+    </div>
+
+    <p>{{TS `It may take a couple of minutes for the webserver to reload after performing the reinstallation.`}}</p>
+
+    <input type="submit" class="btn btn-primary" value="{{TS `Reinstall`}}">
+</form>
+<div class="return-link">
+    <a id="lnkReturn" href="?">
+        <span class="glyphicon glyphicon-circle-arrow-left"></span>
+        {{TS `Go Back`}}
+    </a>
+</div>

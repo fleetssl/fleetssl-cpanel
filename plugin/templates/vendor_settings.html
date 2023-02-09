@@ -1,0 +1,15 @@
+<form method="POST">
+    <p>
+        <label><input type="checkbox" name="DisableMail" {{if .DisableMail }}checked{{end}}> {{TS `Disable renewal emails`}}</label><br>
+        {{TS `This setting disables the renew success/failure emails that are generated when the plugin attempts to renew a certificate that is close to expiring.`}}
+    </p>
+
+    <input type="submit" value="{{TS `Save`}}">
+</form>
+
+<div class="return-link">
+    <a id="lnkReturn" href="?">
+        <span class="glyphicon glyphicon-circle-arrow-left"></span>
+        {{TS `Go Back`}}
+    </a>
+</div>

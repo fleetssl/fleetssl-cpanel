@@ -1,0 +1,141 @@
+<link rel="stylesheet" type="text/css" href="datatables.min.css"/>
+<link rel="stylesheet" href="status/statusio_widget.css">
+
+<script type="text/javascript" src="datatables.min.js"></script>
+<script>
+    $(document).ready( function() {
+        installedTable = $('#installed_domains').DataTable();
+        availableTable = $('#available_domains').DataTable();
+
+        $.fn.dataTableExt.afnFiltering.push(
+            function (oSettings, aData, iDataIndex) {
+                var checked = $('#hidecustom').is(':checked');
+                return !checked || aData[3] != {{TS `Custom`}};
+            }
+        );
+
+        $('#hidecustom').change(function() {
+            availableTable.draw();
+        } );
+
+        $( '#available_domains #select-all' ).click( function () {
+            console.log ( '#select-all was clicked' );
+            $( '#available_domains input[type="checkbox"][name="domain"]' ).prop('checked', this.checked)
+        })
+    } );
+</script>
+
+<script src="status/statusio_widget.js"></script>
+
+<p>
+    {{TS `<a href="https://letsencrypt.org/">Let's Encrypt</a>&trade; is an effort to provide free domain-validated certificates in an automated fashion. This page provides a facility to issue certificates via the Let's Encrypt&trade; service. Certificates issued here will be renewed automatically.`}}
+    {{TS `Service status:`}} <a href="http://letsencrypt.status.io" target="_blank"><span id="current-status-description">(fetching ...)</span><i class="current-status-indicator"></i></a>
+</p>
+
+<p><a href="?action=settings">{{TS `View settings`}}</a></p>
+
+<h2>{{TS `Your domains with Let's Encrypt&trade; certificates`}}</h2>
+<table id="installed_domains" class="table table-striped nonsortable">
+    <thead>
+        <tr>
+            <th>{{TS `Domain`}}</th>
+            <th>{{TS `Alt Names`}}</th>
+            <th>{{TS `Status`}}</th>
+            <th>{{TS `Validation`}}</th>            
+            <th>{{TS `Expiry`}}</th>
+            <th>{{TS `Actions`}}</th>
+        </tr>
+    </thead>
+    <tbody>
+    {{$status := .Status}}
+    {{range .Certs}}
+        <tr>
+            <td>
+                {{.Domain}}
+            </td>
+            <td>{{range .AltNames}}{{.}}<br>{{end}}</td>
+            <td>{{with index $status .CertId}}{{.}}{{else}}{{TS `Not Installed`}}{{end}}</td>
+            <td>{{if .ChallengeMethod}}{{.ChallengeMethod}}{{else}}http-01{{end}}</td>            
+            <td>{{timeToString .CertExpiry}}</td>
+            <td>
+                <a class="btn btn-link" href="?action=remove&domain={{.Domain}}">
+                    <span class="glyphicon glyphicon-trash"></span>
+                    {{TS `Remove`}}
+                </a>
+                <a class="btn btn-link" href="?action=reinstall&domain={{.Domain}}">
+                    <span class="glyphicon glyphicon-repeat"></span>
+                    {{TS `Reinstall`}}
+                </a>
+                <a class="btn btn-link" href="?action=view&domain={{.Domain}}">
+                    <span class="glyphicon glyphicon-list-alt"></span>
+                    {{TS `View`}}
+                </a>
+            </td>
+        </tr>
+    {{end}}
+    {{ range $target, $source := .Reuses }}
+    <tr>
+        <td>{{ $target }}</td>
+        <td><em>Re-using the certificate for {{ $source }}.</em> </td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td><a class="btn btn-link" href="?action=remove-reuse&domain={{ $target }}"><span class="glyphicon glyphicon-trash"></span> {{TS `Remove`}}</a></td>
+    </tr>
+    {{ end }}
+    </tbody>
+</table>
+
+{{with .LastRenewalCheck}}
+<p>
+    <small>{{TF `Your certificates were last reviewed for automatic renewal on %s` (timeToString .) }} </small>
+</p>
+{{end}}
+
+<h2>{{TS `Issue a new certificate`}}</h2>
+<p>{{TS `Choose from one of your domains below. A new key and certificate will be added to the SSL/TLS manager.`}}</p>
+
+<table id="available_domains" class="table table-striped nonsortable">
+    <col style="width:30%">
+    <col style="width:40%">
+    <col style="width:30%">
+    <thead>
+        <tr>
+            <th>{{TS `Domain`}}</th>
+            <th>{{TS `Alt Names`}}</th>
+            <th>{{TS `Actions`}}</th>
+        </tr>
+    </thead>
+    <tbody>
+    {{range $root, $domains := .GroupedDomains}}
+        <tr>
+            <td>{{$root}}</td>
+            <td>{{range $domains}}{{.Domain}}, {{end}}</td>
+            <td>
+                <a class="btn btn-link" href="?action=issue&domain={{$root}}">
+                    <span class="glyphicon glyphicon-plus"></span>
+                    {{TS `Issue`}}
+                </a>
+            </td>
+        </tr>
+    {{end}}
+    </tbody>
+</table>
+
+{{if .CustomDomains }}
+<table style="width:100%">
+    <tr>
+        <td style="text-align:right">
+            <label><input type="checkbox" id="hidecustom"> {{TS `Hide Custom`}} </label>
+        </td>
+    </tr>
+</table>
+{{ end }}
+
+<hr/>
+<small style="margin-top: 50px;">
+    <p>{{TS `<a href="../ssl/index.html">Click here</a> to visit the cPanel SSL/TLS Manager. Please note that if you delete any keys or certificates in use by FleetSSL cPanel, you may get them back by clicking "Reinstall" above.`}}
+    </p>
+    <p>{{TS `Plugin version:`}} {{ .Version }}</p>
+    <p>Let's Encrypt&trade; is a trademark of the Internet Security Research Group. All rights reserved.</p>
+</small>

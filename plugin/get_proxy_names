@@ -1,0 +1,15 @@
+#!/usr/local/cpanel/3rdparty/bin/perl
+
+package scripts::fleetssl_get_proxysubdomains;
+
+use strict;
+
+use Cpanel::WebVhosts::ProxySubdomains ();
+
+exit run(@ARGV) unless caller();
+
+sub run {
+    my ( $user ) = @_;
+    my @labels = Cpanel::WebVhosts::ProxySubdomains::ssl_proxy_subdomain_labels_for_user($user);
+    print "$_\n" for @labels;
+}

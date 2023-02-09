@@ -1,0 +1,32 @@
+<!-- this file is included at the top of the page if the theme is set to paper_lantern -->
+<script type='text/javascript'>
+function LetsEncrypt_DisableButtons() {
+    var submit = $("input[type='submit']");
+	submit.attr('disabled', 'true');
+	submit.attr('value', 'Please wait...');
+	$("body").css({"cursor": "wait"});
+	return true;
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+	var methodChangeHandler = function () {
+		document.querySelectorAll('.wildcard-checkbox').forEach(function (el) {
+			switch(document.querySelector("input[name='challenge_method']:checked").value) {
+				case "dns-01":
+					el.disabled = false;
+					break;
+				case "http-01":
+					el.checked = false;
+					el.disabled = true;
+					break;
+			}
+		});
+	};
+
+	document.querySelectorAll("input[name='challenge_method']").forEach(function (el) {
+		el.addEventListener('click', methodChangeHandler);
+	});
+
+	methodChangeHandler();
+});
+</script>

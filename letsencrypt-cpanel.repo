@@ -1,0 +1,4 @@
+[letsencrypt-cpanel]
+name=Let's Encrypt for cPanel
+baseurl=https://r.cpanel.fleetssl.com
+gpgcheck=0

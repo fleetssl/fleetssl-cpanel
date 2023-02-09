@@ -1,0 +1,20 @@
+<p id="confirmDesc">
+    {{TF `Are you sure you wish to <strong>permanently</strong> remove certificate for domain %q ?` .Domain }}
+</p>
+{{with .AltNames}}
+<p>{{TS `This certificate also includes the following alternative names,`}}</p>
+<ul>
+    {{range .}}
+    <li>{{.}}</li>
+    {{end}}
+</ul>
+{{end}}
+<form method="post" onsubmit="return LetsEncrypt_DisableButtons()">
+    <input type="submit" class="btn btn-primary" value="{{TS `Remove Certificate`}}">
+</form>
+<div class="return-link">
+    <a id="lnkReturn" href="?">
+        <span class="glyphicon glyphicon-circle-arrow-left"></span>
+        {{TS `Go Back`}}
+    </a>
+</div>

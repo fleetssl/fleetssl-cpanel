@@ -1,0 +1,57 @@
+.PHONY: all clean package translate rpm clean-rpm docker-build-setup docker-build
+
+VER=`cat VERSION`
+CWD=`pwd`
+
+all: clean package
+
+letsencrypt.live.cgi: 
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -ldflags "-X bitbucket.org/letsencrypt-cpanel/letsencrypt-cpanel/cmd/common.AppVersion=$(VER)" -o letsencrypt.live.cgi cmd/letsencrypt.go
+
+translate:
+	cat cmd/cgi/*.go | gawk 'match($$0, /T[SEF]\(\"(.+?)\"\)/, m) { print "`" m[1] "`=" }' > plugin/vendor.en.ini_unsorted
+	cat plugin/templates/*.html | gawk 'match($$0, /T[SEF] `(.+?)`/, m) { print "`" m[1] "`=" }' >> plugin/vendor.en.ini_unsorted
+	sort -u plugin/vendor.en.ini_unsorted > plugin/vendor.en.ini
+	rm -f plugin/vendor.en.ini_unsorted
+
+package: letsencrypt.live.cgi translate
+	cp letsencrypt.live.cgi plugin/
+	@rm -f letsencrypt-$(VER).tar.gz
+	tar czf letsencrypt-$(VER).tar.gz --transform s/plugin/letsencrypt-plugin-$(VER)/ plugin/
+
+rpm: letsencrypt.live.cgi translate
+	@rm -rf fpm; mkdir fpm
+	cp -r plugin/* fpm/ 
+	cp letsencrypt.live.cgi fpm/
+	mv fpm/templates/* fpm/ && rmdir fpm/templates
+
+	fpm -a $(ARCH) -s dir -t rpm -n letsencrypt-cpanel -v $(VER) --iteration $(ITERATION) -C ./fpm/ \
+	--before-install fpm/pre-install.sh --after-install fpm/post-install.sh \
+	--before-remove fpm/uninstall.sh \
+	--prefix /opt/fleetssl-cpanel \
+	--rpm-os linux --url https://cpanel.fleetssl.com/ \
+	--depends bc
+
+	fpm -a $(ARCH) -s dir -t deb -n letsencrypt-cpanel -v $(VER) --iteration $(ITERATION) -C ./fpm/ \
+	--before-install fpm/pre-install.sh --after-install fpm/post-install.sh \
+	--before-remove fpm/uninstall.sh \
+	--prefix /opt/fleetssl-cpanel \
+	--url https://cpanel.fleetssl.com/ \
+	--depends bc --depends init-system-helpers
+
+	@rm -rf fpm
+
+docker-build-setup:
+	sudo docker build -t le-build .
+
+docker-build: clean-rpm clean
+	sudo docker run --rm -t -e "ARCH=i386" -e "GOARCH=386" -v $(CWD)/.gomodcache:/go/pkg/mod -v $(CWD):/go/src/bitbucket.org/letsencrypt-cpanel/letsencrypt-cpanel le-build
+	sudo docker run --rm -t -e "ARCH=amd64" -e "GOARCH=amd64" -v $(CWD)/.gomodcache:/go/pkg/mod -v $(CWD):/go/src/bitbucket.org/letsencrypt-cpanel/letsencrypt-cpanel le-build
+
+clean-rpm:
+	rm -f *.rpm
+	rm -f rpm/*.rpm
+	rm -f *.deb
+
+clean:
+	rm -f letsencrypt.live.cgi plugin/letsencrypt.live.cgi

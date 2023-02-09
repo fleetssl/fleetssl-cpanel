@@ -1,0 +1,80 @@
+<p>
+    {{TF `This is the certificate information for <strong>%s</strong>.` .Certificate.Subject.CommonName }}
+</p>
+<table class="table nonsortable">
+    <tr>
+        <th>{{TS `Field`}}</th>
+        <th>{{TS `Value`}}</th>
+    </tr>
+    <tr>
+        <td>{{TS `Challenge Method`}}</td>
+        <td>{{.NvdataCert.ChallengeMethod}}</td>
+    </tr>
+    <tr>
+        <td>{{TS `Id`}}</td>
+        <td>{{.NvdataCert.CertId}}</td>
+    </tr>
+    <tr>
+        <td>{{TS `Order Url`}}</td>
+        <td>{{.NvdataCert.OrderUrl}}</td>
+    </tr>
+    <tr>
+        <td>{{TS `Subject`}}</td>
+        <td>{{.Certificate.Subject.CommonName}}</td>
+    </tr>
+    <tr>
+        <td>{{TS `DNS Names`}}</td>
+        <td>{{.Certificate.DNSNames}}</td>
+    </tr>
+    <tr>
+        <td>{{TS `Issuer`}}</td>
+        <td>{{.Certificate.Issuer.CommonName}}</td>
+    </tr>
+    <tr>
+        <td>{{TS `Valid After`}}</td>
+        <td>{{.Certificate.NotBefore.String}}</td>
+    </tr>
+    <tr>
+        <td>{{TS `Valid Before`}}</td>
+        <td>{{.Certificate.NotAfter.String}}</td>
+    </tr>
+    <tr>
+        <td>{{TS `PEM-Encoded Certificate`}}</td>
+        <td>
+            <pre>{{.NvdataCert.DomainCert}}</pre>
+        </td>
+    </tr>
+    <tr>
+        <td>{{TS `PEM-Encoded Issuer`}}</td>
+        <td>
+            <pre>{{ .NvdataCert.BestIssuer .NvdataCert.PreferredIssuer }}</pre>
+        </td>
+    </tr>
+    <tr id="alternate-chains">
+        <td>{{TS `Available Alternate Chains`}}</td>
+        <td>
+            <ul>
+                {{ range $issuerName, $issuerPEM := .NvdataCert.AlternateChains }}
+                <li>
+                    {{ $issuerName }}
+                    {{ if eq $issuerName $.NvdataCert.PreferredIssuer }}
+                        <em>(Currently preferred issuer)</em>
+                    {{ end }}
+                </li>
+                {{ end }}
+            </ul>
+            <p>
+                To change to an alternate chain, please visit the 
+                <a href="?action=reinstall&domain={{.Domain}}">
+                    <span class="glyphicon glyphicon-repeat"></span> Reinstall
+                </a> page.
+            </p>
+        </td>
+    </tr>
+</table>
+<div class="return-link">
+    <a id="lnkReturn" href="?">
+        <span class="glyphicon glyphicon-circle-arrow-left"></span>
+        {{TS `Go Back`}}
+    </a>
+</div>

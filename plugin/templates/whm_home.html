@@ -1,0 +1,99 @@
+<html>
+<link rel="stylesheet" href="bootstrap.min.css">
+<link rel="stylesheet" type="text/css" href="datatables.min.css"/>
+<script src="jquery-1.12.4.min.js"></script>
+<script type="text/javascript" src="datatables.min.js"></script>
+<script src="bootstrap.min.js"></script>
+<script>
+    $(document).ready( function() {
+        installedTable = $('#installed_certs').DataTable();
+    } );
+</script>
+
+<div class="container">
+
+    <h2>FleetSSL cPanel (WHM)</h2>
+
+    <div class="alert alert-info">
+        <p>To issue certificates, please login to any user's cPanel account and visit the Lets Encrypt interface there.</p>
+        <p>Alternative, you can use <a href="https://cpanel.fleetssl.com/docs/for-admins/cli-reference/" target="_blank" rel="noopener">the CLI interface</a>, <code>le-cp help</code></p>
+    </div>
+
+    <ul class="nav nav-tabs">
+        <li class="{{if not (.Params.Get "config")}}active{{end}}"><a data-toggle="tab" href="#sectionInstalled">Installed Certificates</a></li>
+        <li class="{{if .Params.Get "config"}}active{{end}}"><a data-toggle="tab" href="#sectionConfiguration">Configuration</a></li>
+    </ul>
+
+    <div class="tab-content">
+        <div id="sectionInstalled" class="tab-pane{{if not (.Params.Get "config")}} active{{end}}">
+            <h3>Installed Certificates</h3>
+            <p>There are currently {{len .Vhosts}} Let's Encrypt certificates present on this system.</p>
+            <hr>
+            <table id="installed_certs" class="table table-striped nonsortable">
+                <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Domains</th>
+                    <th>Expiry</th>
+                    <th>Docroot</th>
+                </tr>
+                </thead>
+                <tbody>
+                {{range .Vhosts}}
+                <tr>
+                    <td>{{.User}}</td>
+                    <td>{{range .Certificate.Domains}}{{.}}<br>{{end}}</td>
+                    <td>{{.Certificate.Expiry.String}}</td>
+                    <td>{{.Docroot}}</td>
+                </tr>
+                {{end}}
+                </tbody>
+            </table>
+        </div>
+
+        <div id="sectionConfiguration" class="tab-pane{{if .Params.Get "config"}} active{{end}}">
+            <h3>Configuration</h3>
+            <form method="post" action="?api=update_config">
+                <input type="hidden" name="redirect" value="true"/>
+                <p>These are some common configuration items, please refer to <a href="https://cpanel.fleetssl.com/docs/for-admins/configuration/" target="_blank" rel="noopener">the full reference</a> for more. Some of these options will only apply after a service restart: <code>service letsencrypt-cpanel restart</code></p>
+                <table id="configs" class="table table-striped nonsortable">
+                    <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>Value</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {{ range .Configs }}
+                    <tr>
+                        <td>{{ .Name }}</td>
+                        <td><small>{{ .Description}}</small></td>
+                        {{ if eq "bool" .Type }}
+                        <td>
+                            <div class="radio">
+                                <label>
+                                    <input type="radio" name="conf-{{ .Key }}" value="true" {{ if eq "true" .Value}}checked{{ end }}/>
+                                    On
+                                </label>
+                            </div>
+                            <div class="radio">
+                                <label>
+                                    <input type="radio" name="conf-{{ .Key }}" value="false" {{ if eq "false" .Value}}checked{{ end }}/>
+                                    Off
+                                </label>
+                            </div>
+                        </td>
+                        {{ else }}
+                        <td><input type="{{ .Type }}" name="conf-{{ .Key }}" value="{{ .Value }}"/></td>
+                        {{ end }}
+                    </tr>
+                    {{ end }}
+                    </tbody>
+                </table>
+                <input type="submit" class="btn btn-primary" value="Update"/>
+            </form>
+        </div>
+    </div>
+
+</div>

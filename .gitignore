@@ -1,0 +1,14 @@
+*.live.cgi
+*-hook
+whmapi_test.go
+.idea
+*.iml
+letsencrypt.db
+lib/
+*.tar.gz
+vendor.en.ini
+fpm/
+*.rpm
+*.deb
+rpm/
+/.gomodcache

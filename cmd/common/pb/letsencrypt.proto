@@ -1,0 +1,199 @@
+syntax = "proto3";
+option go_package = "bitbucket.org/letsencrypt-cpanel/letsencrypt-cpanel/cmd/common/pb";
+
+message Error {
+	string error = 1; 
+}
+
+service Plugin {
+	// Service Certs
+	rpc ServiceCertSetEnabled(ServiceCertSetEnabledRequest) returns (ServiceCertSetEnabledResponse) {}
+	rpc ServiceCertListDomains(ServiceCertListDomainsRequest) returns (ServiceCertListDomainsResponse) {}
+	rpc ServiceCertAddDomain(ServiceCertAddDomainRequest) returns (ServiceCertAddDomainResponse) {}
+	rpc ServiceCertRemoveDomain(ServiceCertRemoveDomainRequest) returns (ServiceCertRemoveDomainResponse) {}
+	rpc ServiceCertReset(ServiceCertResetRequest) returns (ServiceCertResetResponse) {}
+	// AutoSSL
+	rpc AutoSSLSetEnabled(AutoSSLSetEnabledRequest) returns (AutoSSLSetEnabledResponse) {}
+	rpc AutoSSLRunForUser(AutoSSLRunForUserRequest) returns (AutoSSLRunForUserResponse) {}
+	// Normal SSL
+	rpc SSLListCertificates(SSLListCertificatesRequest) returns (SSLListCertificatesResponse) {}
+	rpc SSLIssueCertificate(SSLIssueCertificateRequest) returns (SSLIssueCertificateResponse) {}
+	rpc SSLRemoveCertificate(SSLRemoveCertificateRequest) returns (SSLRemoveCertificateResponse) {}
+	rpc SSLDoRenewals(SSLDoRenewalsRequest) returns (SSLDoRenewalsResponse) {}
+	rpc SSLReuseCertificate(SSLReuseCertificateRequest) returns (SSLReuseCertificateResponse) {}
+	rpc SSLRemoveReuseCertificate(SSLRemoveReuseCertificateRequest) returns (SSLRemoveReuseCertificateResponse) {}
+	rpc SSLReuseList(SSLReuseListRequest) returns (SSLReuseListResponse) {}
+	rpc SSLReinstallCertificate(SSLReinstallRequest) returns (SSLReinstallResponse) {}
+	// Config
+	rpc ConfigGetEntries(ConfigGetEntriesRequest) returns (ConfigGetEntriesResponse) {}
+	rpc ConfigUpdateEntries(ConfigUpdateEntriesRequest) returns (ConfigUpdateEntriesResponse) {}
+	// Reporting
+	rpc ReportingForceRun(ReportingForceRunRequest) returns (ReportingForceRunResponse) {}
+
+	// RPC
+	rpc RpcForceReload(RpcForceReloadRequest) returns (RpcForceReloadResponse) {}
+
+	rpc Ping(PingRequest) returns (PingResponse) {}
+}
+
+// Service Certs
+message ServiceCertSetEnabledRequest {
+	bool new_state = 1;
+}
+message ServiceCertSetEnabledResponse {
+	repeated Error errors = 1;
+}
+message ServiceCertListDomainsRequest{}
+message ServiceCertListDomainsResponse {
+	repeated Error errors = 1;
+	repeated string domains = 2;
+}
+message ServiceCertAddDomainRequest{
+	repeated string domains = 1;
+}
+message ServiceCertAddDomainResponse{
+	repeated Error errors = 1;
+}
+message ServiceCertRemoveDomainRequest{
+	repeated string domains = 1;
+}
+message ServiceCertRemoveDomainResponse{
+	repeated Error errors = 1;
+}
+message ServiceCertResetRequest {
+}
+message ServiceCertResetResponse {
+	repeated Error errors = 1;
+}
+
+// AutoSSL
+message AutoSSLSetEnabledRequest {
+	bool new_state = 1;
+}
+message AutoSSLSetEnabledResponse {
+	repeated Error errors = 1;
+}
+message AutoSSLRunForUserRequest {
+	string user = 1;
+	bool retry = 2;
+}
+message AutoSSLRunForUserResponse {
+	repeated Error errors = 1;
+	repeated SSLCertificate certificates = 2;
+	map<string,string> debug = 3;
+}
+
+// SSL
+message SSLCertificate {
+	string domain = 1;
+	repeated string alt_names = 2;
+	string url = 3;
+	string cert_id = 4;
+	string key_id = 5;
+	int64 expiry = 6;
+	string cert_pem = 7;
+}
+message SSLListCertificatesRequest {
+	string user = 1;
+}
+message SSLListCertificatesResponse {
+	repeated Error errors = 1;
+	repeated SSLCertificate certificates = 2;
+}
+message SSLIssueCertificateRequest {
+	string user = 1;
+	repeated string names = 2;
+}
+message SSLIssueCertificateResponse {
+	repeated Error errors = 1;
+	repeated SSLCertificate new_certificates = 2;
+	map<string,string> debug = 3;
+}
+message SSLRemoveCertificateRequest {
+	string user = 1;
+	repeated string names = 2;
+	bool only_managed = 3;
+}
+message SSLRemoveCertificateResponse {
+	repeated Error errors = 1;
+	repeated SSLCertificate removed = 2;
+}
+message SSLDoRenewalsRequest {
+	string user = 1;
+	bool force = 2;
+	bool dryRun = 3;
+	string virtualHost = 4;
+}
+message SSLDoRenewalsResponse {
+	repeated Error errors = 1;
+	repeated SSLCertificate renewed = 2;
+}
+message SSLReuseCertificateRequest {
+	string user = 1;
+	string sourceDomain = 2;
+	string targetDomain = 3;
+}
+message SSLReuseCertificateResponse {
+	repeated Error errors = 1;
+}
+message SSLRemoveReuseCertificateRequest {
+	string user = 1;
+	string targetDomain = 2;
+}
+message SSLRemoveReuseCertificateResponse {
+	repeated Error errors = 1;
+}
+message SSLReuseListRequest {
+	string user = 1;
+}
+message SSLReuseListResponse {
+	repeated Error errors = 1;
+	map<string,string> reuses = 2;
+}
+message SSLReinstallRequest {
+	string user = 1;
+	string domain = 2;
+	string preferredIssuer = 3;
+};
+message SSLReinstallResponse {
+	repeated Error errors = 1;
+};
+
+message PingRequest {
+}
+message PingResponse {
+	repeated Error errors = 1;
+}
+
+// Config
+message ConfigEntry {
+	string name = 1;
+	string description = 2;
+	string type = 3;
+	string key = 4;
+	string value = 5;
+}
+message ConfigGetEntriesRequest {
+}
+message ConfigGetEntriesResponse {
+	repeated Error errors = 1;
+	repeated ConfigEntry entries = 2;
+}
+message ConfigUpdateEntriesRequest {
+	repeated ConfigEntry entries = 1;
+}
+message ConfigUpdateEntriesResponse {
+	repeated Error errors = 1;
+}
+
+// Reporting
+message ReportingForceRunRequest {}
+message ReportingForceRunResponse {
+	repeated Error errors = 1;
+}
+
+// RPC
+message RpcForceReloadRequest {}
+message RpcForceReloadResponse {
+	repeated Error errors = 1;
+}
